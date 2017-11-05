@@ -1,0 +1,5 @@
+<button type="button" (click)="addIndividual()">Add</button>
+<app-individual *ngFor="let individual of individualsArray.controls" [formControl]="individual"></app-individual>
+<pre>array is valid? <b>{{individualsArray.valid}}</b></pre>
+<pre>{{individualsArray.value | json}}</pre>
+<button type="button" (click)="updateValueAndValidity()">Update Value and Validity (IndividualsListComponent)</button>

@@ -1,0 +1,7 @@
+<div [formGroup]="individualForm">
+  <input type="text" formControlName="firstName" placeholder="First Name (required)" [ngClass]="{ 'error': !individualForm.get('firstName').valid }">
+  <input type="text" formControlName="lastName" placeholder="Last Name (required)" [ngClass]="{ 'error': !individualForm.get('lastName').valid }">
+  <input type="number" formControlName="age" placeholder="Age">
+  <app-question *ngIf="showSmokerQuestion$ | async" text="Smoker?" formControlName="smoker"></app-question>
+</div>
+<pre>individual is valid? <b>{{individualForm.valid}}</b></pre>

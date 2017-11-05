@@ -1,0 +1,6 @@
+<h2>Individuals</h2>
+<div [formGroup]="form">
+  <app-individual-list formControlName="individuals"></app-individual-list>
+</div>
+<pre>outer form is valid? <b>{{form.valid}}</b></pre>
+<pre>{{form.value | json}}</pre>
