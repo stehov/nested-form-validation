@@ -42,6 +42,6 @@ export class QuestionComponent extends AbstractValueAccessor implements OnInit {
   }
 
   validate(control: FormControl) {
-    return this.questionForm.valid ? null : { questionRequired: true };
+    return this.questionForm.get('response').valid ? null : { questionRequired: true };
   }
 }

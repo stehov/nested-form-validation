@@ -69,6 +69,11 @@ export class IndividualComponent extends AbstractValueAccessor implements OnInit
     } else {
       this.individualForm.removeControl('smoker');
     }
+
+    // with this line un-commented, the validity of the form properly becomes invalid
+    // upon making the question visible following entery of an age >= 18
+
+    // setTimeout(() => this.individualForm.updateValueAndValidity(), 0);
   }
 
   writeValue(value: any) {
