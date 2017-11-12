@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy, OnInit, forwardRef } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, NG_VALIDATORS, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
+import { Component, OnInit, Self } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup, NgControl, Validators } from '@angular/forms';
 import { Observable } from 'rxjs/Observable';
 
 import { AbstractValueAccessor } from '../../core/abstract-value-accessor';
@@ -7,27 +7,26 @@ import { AbstractValueAccessor } from '../../core/abstract-value-accessor';
 @Component({
   selector: 'app-individual',
   templateUrl: './individual.component.html',
-  styleUrls: ['./individual.component.css'],
-  providers: [
-    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => IndividualComponent), multi: true },
-    { provide: NG_VALIDATORS, useExisting: forwardRef(() => IndividualComponent), multi: true }
-  ]
+  styleUrls: ['./individual.component.css']
 })
 export class IndividualComponent extends AbstractValueAccessor implements OnInit {
   individualForm: FormGroup;
   showSmokerQuestion$: Observable<boolean>;
 
-  constructor(private formBuilder: FormBuilder) {
+  constructor( @Self() private controlDirective: NgControl,
+    private formBuilder: FormBuilder) {
     super();
+
+    controlDirective.valueAccessor = this;
+
+    this.individualForm = this.buildFormGroup();
   }
 
   ngOnInit() {
     this.initializeForm();
   }
 
-  initializeForm(initialValue?: any) {
-    this.individualForm = this.buildFormGroup(initialValue);
-
+  initializeForm() {
     this.showSmokerQuestion$ = this.individualForm.get('age')
       .valueChanges
       .map(value => +value)
@@ -35,6 +34,15 @@ export class IndividualComponent extends AbstractValueAccessor implements OnInit
       .distinctUntilChanged();
 
     this.handleChanges();
+
+    const control = this.controlDirective.control;
+
+    const validators = control.validator
+      ? [control.validator, this.validate.bind(this)]
+      : this.validate.bind(this);
+
+    control.setValidators(validators);
+    control.updateValueAndValidity();
   }
 
   buildFormGroup(value?: any) {
@@ -43,12 +51,6 @@ export class IndividualComponent extends AbstractValueAccessor implements OnInit
       lastName: [!!value ? value.lastName : '', Validators.required],
       age: [!!value ? value.age : '', Validators.required]
     });
-
-    // with this line un-commented, the validity seems to be re-computed after all form
-    // controls and components are initialized. The IndividualsComponent reports a valid
-    // status for a fraction of a second (almost unnoticable) then changes to invalid
-
-    // setTimeout(() => group.updateValueAndValidity(), 0);
 
     return group;
   }
@@ -63,17 +65,11 @@ export class IndividualComponent extends AbstractValueAccessor implements OnInit
   }
 
   setSmokerQuestionVisibility(visibility: boolean) {
-    console.log('setting smoker visibility', visibility);
     if (!!visibility) {
       this.individualForm.addControl('smoker', this.formBuilder.control(''));
     } else {
       this.individualForm.removeControl('smoker');
     }
-
-    // with this line un-commented, the validity of the form properly becomes invalid
-    // upon making the question visible following entery of an age >= 18
-
-    // setTimeout(() => this.individualForm.updateValueAndValidity(), 0);
   }
 
   writeValue(value: any) {

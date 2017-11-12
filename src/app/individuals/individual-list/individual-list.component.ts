@@ -1,22 +1,23 @@
-import { Component, ChangeDetectionStrategy, Input, OnInit, forwardRef } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, ChangeDetectorRef, OnInit, Self } from '@angular/core';
+import { FormArray, FormBuilder, FormControl, FormGroup, NgControl } from '@angular/forms';
 
 import { AbstractValueAccessor } from '../../core/abstract-value-accessor';
 
 @Component({
   selector: 'app-individual-list',
   templateUrl: './individual-list.component.html',
-  styleUrls: ['./individual-list.component.css'],
-  providers: [
-    { provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => IndividualListComponent), multi: true },
-    { provide: NG_VALIDATORS, useExisting: forwardRef(() => IndividualListComponent), multi: true }
-  ]
+  styleUrls: ['./individual-list.component.css']
 })
 export class IndividualListComponent extends AbstractValueAccessor implements OnInit {
   individualsArray: FormArray;
+  form: FormGroup;
 
-  constructor(private formBuilder: FormBuilder) {
+  constructor( @Self() private controlDirective: NgControl,
+    private formBuilder: FormBuilder,
+    private cd: ChangeDetectorRef) {
     super();
+
+    controlDirective.valueAccessor = this;
   }
 
   ngOnInit() {
@@ -25,6 +26,11 @@ export class IndividualListComponent extends AbstractValueAccessor implements On
 
   initializeArray(initialValue?: any) {
     this.individualsArray = this.formBuilder.array([]);
+
+    const control = this.controlDirective.control;
+    control.setValidators(this.validate.bind(this));
+    control.updateValueAndValidity();
+
     this.handleChanges();
   }
 
@@ -40,6 +46,10 @@ export class IndividualListComponent extends AbstractValueAccessor implements On
       lastName: '',
       age: ''
     }));
+
+    // without the detectChanges call an ExpressionChangedAfterItHasBeenCheckedError error
+    // gets thrown
+    this.cd.detectChanges();
   }
 
   validate(c: FormControl) {
